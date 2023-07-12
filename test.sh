@@ -19,5 +19,6 @@ assert() {
 assert 0 0
 assert 42 42
 assert 25 "100 - 75 + 25 - 25"
+assert 18 "( 100 + 20 ) / 40 + 3 * 5"
 
 echo OK
