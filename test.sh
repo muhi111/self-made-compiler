@@ -18,5 +18,8 @@ assert() {
 
 assert 0 0
 assert 42 42
+assert 25 "100-75+25-25"
+assert 0 "q"
+assert 1 "1+a"
 
 echo OK
