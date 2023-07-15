@@ -2,3 +2,4 @@ smc
 tmp*
 a.out
 .vscode/
+test.c

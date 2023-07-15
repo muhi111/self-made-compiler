@@ -12,12 +12,13 @@ typedef enum{
 	TK_EOF,		 // 入力の終わりを表すトークン
 } TokenKind;
 typedef struct Token Token;
-typedef struct Token{
+struct Token{
 	TokenKind kind; // トークンの型
 	Token *next;	// 次の入力トークン
 	int val;		// kindがTK_NUMの場合、その数値
 	char *str;		// トークン文字列
-}Token;
+	int len;		// トークンの長さ
+};
 
 // 抽象構文木
 typedef enum{
@@ -25,6 +26,10 @@ typedef enum{
 	ND_SUB, // -
 	ND_MUL, // *
 	ND_DIV, // /
+	ND_EQ,	// ==
+	ND_NE,	// !=
+	ND_LT,	// <
+	ND_LE,	// <=
 	ND_NUM, // 整数
 } NodeKind;
 typedef struct Node Node;
@@ -36,21 +41,26 @@ struct Node{
 };
 
 void error_at(char *loc, char *fmt, ...);
-bool consume(char op);
-void expect(char op);
+bool consume(char *op);
+void expect(char *op);
 int expect_number(void);
 bool at_eof(void);
-Token *new_token(TokenKind kind, Token *cur, char *str);
+Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(char *p);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *expr(void);
+Node *equality(void);
+Node *relational(void);
+Node *add(void);
 Node *mul(void);
-Node *unary();
+Node *unary(void);
 Node *primary(void);
 void gen(Node *node);
 
 Token *token;
+
+// ポインタで宣言してメモリ確保せずに代入する行為って許容されるんだっけ？？？？
 char *user_input;
 
 int main(int argc, char **argv){
@@ -106,48 +116,106 @@ void gen(Node *node){
 		printf("  cqo\n");
 		printf("  idiv rdi\n");
 		break;
+	case ND_EQ:
+		printf("  cmp rax, rdi\n");
+		printf("  sete al\n");
+		printf("  movzb rax, al\n");
+		break;
+	case ND_NE:
+		printf("  cmp rax, rdi\n");
+		printf("  setne al\n");
+		printf("  movzb rax, al\n");
+		break;
+	case ND_LT:
+		printf("  cmp rax, rdi\n");
+		printf("  setl al\n");
+		printf("  movzb rax, al\n");
+		break;
+	case ND_LE:
+		printf("  cmp rax, rdi\n");
+		printf("  setle al\n");
+		printf("  movzb rax, al\n");
+		break;
 	}
 	printf("  push rax\n");
 }
 
-// expr    = mul ("+" mul | "-" mul)*
+// expr = equality
 Node *expr(void){
-	Node *node = mul();
-	while(1){
-		if (consume('+'))
-			node = new_node(ND_ADD, node, mul());
-		else if (consume('-'))
-			node = new_node(ND_SUB, node, mul());
-		else
+	Node *node = equality();
+	return node;
+}
+// equality   = relational ("==" relational | "!=" relational)*
+Node *equality(void){
+	Node *node = relational();
+	while (1){
+		if(consume("==")){
+			node = new_node(ND_EQ, node, relational());
+		}else if (consume("!=")){
+			node = new_node(ND_NE, node, relational());
+		}else{
 			return node;
+		}
 	}
 }
-// mul = unary("*" unary | "/" unary) *
-Node * mul(void){
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+Node *relational(void){
+	Node *node = add();
+	while (1){
+		if (consume("<")){
+			node = new_node(ND_LT, node, add());
+		}else if (consume("<=")){
+			node = new_node(ND_LE, node, add());
+		}else if(consume(">")){
+			node = new_node(ND_LT, add(), node);
+		}else if(consume(">=")){
+			node = new_node(ND_LE, add(), node);
+		}else{
+			return node;
+		}
+	}
+}
+// add = mul ("+" mul | "-" mul)*
+Node *add(void){
+	Node *node = mul();
+	while (1){
+		if (consume("+")){
+			node = new_node(ND_ADD, node, mul());
+		}else if (consume("-")){
+			node = new_node(ND_SUB, node, mul());
+		}else{
+			return node;
+		}
+	}
+}
+// mul = unary ("*" unary | "/" unary)*
+Node *mul(void){
 	Node *node = unary();
 	while(1){
-		if (consume('*'))
+		if (consume("*")){
 			node = new_node(ND_MUL, node, unary());
-		else if (consume('/'))
+		}else if (consume("/")){
 			node = new_node(ND_DIV, node, unary());
-		else
+		}else{
 			return node;
+		}
 	}
 }
 // unary   = ("+" | "-")? primary
-Node *unary(){
-	if (consume('+'))
+Node *unary(void){
+	if (consume("+")){
 		return primary();
-	if (consume('-'))
+	}else if (consume("-")){
 		return new_node(ND_SUB, new_node_num(0), primary());
+	}
 	return primary();
 }
 // primary = num | "(" expr ")"
 Node *primary(void){
 	// 次のトークンが"("なら、"(" expr ")"のはず
-	if (consume('(')){
+	if (consume("(")){
 		Node *node = expr();
-		expect(')');
+		expect(")");
 		return node;
 	}
 	// そうでなければ数値のはず
@@ -186,17 +254,20 @@ void error_at(char *loc, char *fmt, ...){
 }
 
 // 演算子の場合tokenを進める
-bool consume(char op){
-	if (token->kind != TK_RESERVED || token->str[0] != op)
+// 複数文字の演算子に対応
+// memcmpじゃなくstrncmpとかでよくね？？？？
+bool consume(char *op){
+	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
 		return false;
 	token = token->next;
 	return true;
 }
 
 // やってること自体はconsumeと同じ,TFを返すかどうかが違い
-void expect(char op){
-	if (token->kind != TK_RESERVED || token->str[0] != op)
-		error_at(token->str,"'%c'ではありません", op);
+// 複数文字の演算子に対応
+void expect(char *op){
+	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
+		error_at(token->str,"'%s'ではありません", op);
 	token = token->next;
 }
 
@@ -215,10 +286,11 @@ bool at_eof(void){
 }
 
 // 新しいtokenを作る
-Token *new_token(TokenKind kind, Token *cur, char *str){
+Token *new_token(TokenKind kind, Token *cur, char *str, int len){
 	Token *tok = calloc(1, sizeof(Token));
 	tok->kind = kind;
 	tok->str = str;
+	tok->len = len;
 	cur->next = tok;
 	return tok;
 }
@@ -234,18 +306,25 @@ Token *tokenize(char *p){
 			p++;
 			continue;
 		}
-		if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')'){
-			cur = new_token(TK_RESERVED, cur, p);
-			p++;
+		if (strncmp(p,"<=",2) == 0 || strncmp(p,">=",2) == 0 ||
+		strncmp(p,"==",2) == 0 || strncmp(p,"!=",2) == 0){
+			cur = new_token(TK_RESERVED, cur, p, 2);
+			p += 2;
 			continue;
+		}else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' ||
+				 *p == '(' || *p == ')' || *p == '>' || *p == '<'){
+				cur = new_token(TK_RESERVED, cur, p, 1);
+				p++;
+				continue;
 		}
-		if (isdigit(*p)){
-			cur = new_token(TK_NUM, cur, p);
+		else if (isdigit(*p))
+		{
+			cur = new_token(TK_NUM, cur, p, 0);
 			cur->val = strtol(p, &p, 10);
 			continue;
 		}
 		error_at(p,"トークナイズできません");
 	}
-	new_token(TK_EOF, cur, p);
+	new_token(TK_EOF, cur, p, 0);
 	return head.next;
 }
