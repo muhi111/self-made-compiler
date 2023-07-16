@@ -1,12 +1,16 @@
 CFLAGS=-std=c11 -g -static
+SRCS=main.c codegen.c parse.c
+OBJS=$(SRCS:.c=.o)
 
-smc: self_made_compiler.c
-		gcc self_made_compiler.c -o smc
+smc: $(OBJS)
+	$(CC) -o smc $(OBJS) $(LDFLAGS)
+
+$(OBJS): smc.h
 
 test: smc
-		./test.sh
+	./test.sh
 
 clean:
-		rm -f smc *.o tmp*
+	rm -f smc *.o tmp* a.out
 
 .PHONY: test clean
