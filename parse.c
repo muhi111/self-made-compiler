@@ -1,8 +1,31 @@
 #include "smc.h"
 
-// expr = equality
+// program = stmt*
+Node *program(void){
+	int i = 0;
+	while (!at_eof()){
+		code[i] = stmt();
+		i++;
+	}
+	code[i] = NULL;
+}
+// stmt = expr ";"
+Node *stmt(void){
+	Node *node = expr();
+	expect(";");
+	return node;
+}
+// expr = assign
 Node *expr(void){
+	Node *node = assign();
+	return node;
+}
+// assign = equality ("=" assign)?
+Node *assign(void){
 	Node *node = equality();
+	if (consume("=")){
+		node = new_node(ND_ASSIGN, node, assign());
+	}
 	return node;
 }
 // equality   = relational ("==" relational | "!=" relational)*
@@ -61,7 +84,7 @@ Node *mul(void){
 		}
 	}
 }
-// unary   = ("+" | "-")? primary
+// unary = ("+" | "-")? primary
 Node *unary(void){
 	if (consume("+")){
 		return primary();
@@ -70,15 +93,15 @@ Node *unary(void){
 	}
 	return primary();
 }
-// primary = num | "(" expr ")"
+// primary = num | ident | "(" expr ")"
 Node *primary(void){
-	// 次のトークンが"("なら、"(" expr ")"のはず
 	if (consume("(")){
 		Node *node = expr();
 		expect(")");
 		return node;
+	}else if(token->kind == TK_IDENT){
+		return new_node_ident(token->str[0]);
 	}
-	// そうでなければ数値のはず
 	return new_node_num(expect_number());
 }
 
@@ -88,6 +111,14 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs){
 	node->kind = kind;
 	node->lhs = lhs;
 	node->rhs = rhs;
+	return node;
+}
+
+Node *new_node_ident(char ident){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_LVAR;
+	node->offset = (ident - 'a' + 1) * 8;
+	token = token->next;
 	return node;
 }
 
@@ -156,7 +187,8 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len){
 }
 
 // スペースを飛ばして式をtoken化して線形リストに格納する
-Token *tokenize(char *p){
+Token *tokenize(void){
+	char *p = user_input;
 	Token head;
 	head.next = NULL;
 	Token *cur = &head;
@@ -170,17 +202,27 @@ Token *tokenize(char *p){
 			cur = new_token(TK_RESERVED, cur, p, 2);
 			p += 2;
 			continue;
-		}else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<'){
-				cur = new_token(TK_RESERVED, cur, p, 1);
-				p++;
-				continue;
-		}else if (isdigit(*p)){
-			cur = new_token(TK_NUM, cur, p, 0);
-			cur->val = strtol(p, &p, 10);
+		}
+		else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == ';' || *p == '=')
+		{
+			cur = new_token(TK_RESERVED, cur, p, 1);
+			p++;
 			continue;
+		}
+		else if ('a' <= *p && *p <= 'z')
+		{
+			cur = new_token(TK_IDENT, cur, p, 1);
+			p++;
+			continue;
+		}
+		else if (isdigit(*p))
+		{
+				cur = new_token(TK_NUM, cur, p, 0);
+				cur->val = strtol(p, &p, 10);
+				continue;
 		}
 		error_at(p,"トークナイズできません");
 	}
 	new_token(TK_EOF, cur, p, 0);
-	return head.next;
+	token =  head.next;
 }

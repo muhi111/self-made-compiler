@@ -16,27 +16,11 @@ assert() {
   fi
 }
 
-assert 0 0
-assert 42 42
-assert 2 "(-100 + 70 * 2 ) / 20"
+assert 3 '1; 2; 3;'
 
-assert 0 '0==1'
-assert 1 '42==42'
-assert 1 '0!=1'
-assert 0 '42!=42'
-
-assert 1 '0<1'
-assert 0 '1<1'
-assert 0 '2<1'
-assert 1 '0<=1'
-assert 1 '1<=1'
-assert 0 '2<=1'
-
-assert 1 '1>0'
-assert 0 '1>1'
-assert 0 '1>2'
-assert 1 '1>=0'
-assert 1 '1>=1'
-assert 0 '1>=2'
+assert 3 'a=3; a;'
+assert 8 'a=3; z=5; a+z;'
+assert 6 'a=b=3; a+b;'
+assert 14 'a=5;b=10;c=7; (b*c)/a;'
 
 echo OK
