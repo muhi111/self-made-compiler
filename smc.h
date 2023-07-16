@@ -6,12 +6,11 @@
 #include <string.h>
 
 // トークン
-typedef enum
-{
+typedef enum{
 	TK_RESERVED, // 記号
 	TK_NUM,		 // 整数トークン
 	TK_EOF,		 // 入力の終わりを表すトークン
-	TK_IDENT,	 // 識別子
+	TK_IDENT	 // 識別子
 } TokenKind;
 typedef struct Token Token;
 struct Token{
@@ -23,8 +22,7 @@ struct Token{
 };
 
 // 抽象構文木
-typedef enum
-{
+typedef enum{
 	ND_ADD,     // +
 	ND_SUB,     // -
 	ND_MUL,     // *
@@ -46,15 +44,24 @@ struct Node{
 	int offset;	   // kindがND_LVARの場合のみ使う
 };
 
+// ローカル変数の型
+typedef struct LVar LVar;
+struct LVar{
+	LVar *next; // 次の変数かNULL
+	char *name; // 変数の名前
+	int len;	// 名前の長さ
+	int offset; // RBPからのオフセット
+};
+
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
 void expect(char *op);
 int expect_number(void);
 bool at_eof(void);
-Token *new_token(TokenKind kind, Token *cur, char *str, int len);
+Token *new_token(TokenKind kind, Token *cur, char *str);
 Token *tokenize(void);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
-Node *new_node_ident(char ident);
+Node *new_node_ident(void);
 Node *new_node_num(int val);
 Node *program(void);
 Node *stmt(void);
@@ -68,8 +75,10 @@ Node *unary(void);
 Node *primary(void);
 void gen_lval(Node *node);
 void gen(Node *node);
+LVar *find_lvar(Token *tok);
 
 extern Token *token;
 // ポインタで宣言してメモリ確保せずに代入する行為って許容されるんだっけ？？？？
 extern char *user_input;
 extern Node *code[100];
+extern LVar *locals;

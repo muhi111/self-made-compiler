@@ -100,7 +100,7 @@ Node *primary(void){
 		expect(")");
 		return node;
 	}else if(token->kind == TK_IDENT){
-		return new_node_ident(token->str[0]);
+		return new_node_ident();
 	}
 	return new_node_num(expect_number());
 }
@@ -114,10 +114,21 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs){
 	return node;
 }
 
-Node *new_node_ident(char ident){
+Node *new_node_ident(void){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_LVAR;
-	node->offset = (ident - 'a' + 1) * 8;
+	LVar *lvar = find_lvar(token);
+	if (lvar){
+		node->offset = lvar->offset;
+	}else{
+		lvar = calloc(1, sizeof(LVar));
+		lvar->next = locals;
+		lvar->name = token->str;
+		lvar->len = token->len;
+		lvar->offset = locals->offset + 8;
+		node->offset = lvar->offset;
+		locals = lvar;
+	}
 	token = token->next;
 	return node;
 }
@@ -148,8 +159,9 @@ void error_at(char *loc, char *fmt, ...){
 // 複数文字の演算子に対応
 // memcmpじゃなくstrncmpとかでよくね？？？？
 bool consume(char *op){
-	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
+	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
 		return false;
+	}
 	token = token->next;
 	return true;
 }
@@ -176,53 +188,9 @@ bool at_eof(void){
 	return token->kind == TK_EOF;
 }
 
-// 新しいtokenを作る
-Token *new_token(TokenKind kind, Token *cur, char *str, int len){
-	Token *tok = calloc(1, sizeof(Token));
-	tok->kind = kind;
-	tok->str = str;
-	tok->len = len;
-	cur->next = tok;
-	return tok;
-}
-
-// スペースを飛ばして式をtoken化して線形リストに格納する
-Token *tokenize(void){
-	char *p = user_input;
-	Token head;
-	head.next = NULL;
-	Token *cur = &head;
-
-	while (*p){
-		if (isspace(*p)){
-			p++;
-			continue;
-		}
-		if (strncmp(p,"<=",2) == 0 || strncmp(p,">=",2) == 0 || strncmp(p,"==",2) == 0 || strncmp(p,"!=",2) == 0){
-			cur = new_token(TK_RESERVED, cur, p, 2);
-			p += 2;
-			continue;
-		}
-		else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '>' || *p == '<' || *p == ';' || *p == '=')
-		{
-			cur = new_token(TK_RESERVED, cur, p, 1);
-			p++;
-			continue;
-		}
-		else if ('a' <= *p && *p <= 'z')
-		{
-			cur = new_token(TK_IDENT, cur, p, 1);
-			p++;
-			continue;
-		}
-		else if (isdigit(*p))
-		{
-				cur = new_token(TK_NUM, cur, p, 0);
-				cur->val = strtol(p, &p, 10);
-				continue;
-		}
-		error_at(p,"トークナイズできません");
-	}
-	new_token(TK_EOF, cur, p, 0);
-	token =  head.next;
+LVar *find_lvar(Token *tok){
+	for (LVar *var = locals; var; var = var->next)
+		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+			return var;
+	return NULL;
 }

@@ -3,17 +3,17 @@
 char *user_input;
 Token *token;
 Node *code[100];
+LVar *locals;
 
 int main(int argc, char **argv){
-	if (argc != 2)
-	{
+	if (argc != 2){
 		fprintf(stderr, "引数の個数が正しくありません");
 		return 1;
 	}
 
-	// トークナイズしてパースする
 	user_input = argv[1];
 	tokenize();
+	locals = calloc(1, sizeof(LVar));
 	program();
 
 	// アセンブリの前半部分を出力
