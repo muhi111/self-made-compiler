@@ -10,7 +10,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str){
 }
 
 // スペースを飛ばして式をtoken化して線形リストに格納する
-Token *tokenize(void){
+void *tokenize(void){
 	char *p = user_input;
 	Token head;
 	head.next = NULL;
@@ -20,7 +20,7 @@ Token *tokenize(void){
 		if (isspace(*p)){
 			p++;
 			continue;
-		}else if (!strncmp(p,"<=",2)||!strncmp(p,">=",2)||!strncmp(p,"==",2)||!strncmp(p,"!=",2)){
+		}else if ( strncmp(p,"<=",2) == 0|| strncmp(p,">=",2) == 0|| strncmp(p,"==",2) == 0|| strncmp(p,"!=",2) == 0){
 			cur = new_token(TK_RESERVED, cur, p);
 			cur->len = 2;
 			p += 2;
@@ -29,6 +29,11 @@ Token *tokenize(void){
 			cur = new_token(TK_RESERVED, cur, p);
 			cur->len = 1;
 			p++;
+			continue;
+		}else if (strncmp(p, "return", 6) == 0 && isspace(p[6])){
+			cur = new_token(TK_RETURN, cur, p);
+			cur->len = 6;
+			p += 6;
 			continue;
 		}else if (isalpha(*p)){
 			int len = 0;

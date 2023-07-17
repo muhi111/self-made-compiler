@@ -10,7 +10,8 @@ typedef enum{
 	TK_RESERVED, // 記号
 	TK_NUM,		 // 整数トークン
 	TK_EOF,		 // 入力の終わりを表すトークン
-	TK_IDENT	 // 識別子
+	TK_IDENT,	 // 識別子
+	TK_RETURN,
 } TokenKind;
 typedef struct Token Token;
 struct Token{
@@ -22,18 +23,20 @@ struct Token{
 };
 
 // 抽象構文木
-typedef enum{
-	ND_ADD,     // +
-	ND_SUB,     // -
-	ND_MUL,     // *
-	ND_DIV,     // /
-	ND_EQ,	    // ==
-	ND_NE,	    // !=
-	ND_LT,	    // <
-	ND_LE,	    // <=
-	ND_ASSIGN,  // =
-	ND_LVAR,    // ローカル変数
-	ND_NUM,	    // 整数
+typedef enum
+{
+	ND_ADD,	   // +
+	ND_SUB,	   // -
+	ND_MUL,	   // *
+	ND_DIV,	   // /
+	ND_EQ,	   // ==
+	ND_NE,	   // !=
+	ND_LT,	   // <
+	ND_LE,	   // <=
+	ND_ASSIGN, // =
+	ND_LVAR,   // ローカル変数
+	ND_NUM,	   // 整数
+	ND_RETURN,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
@@ -59,7 +62,7 @@ void expect(char *op);
 int expect_number(void);
 bool at_eof(void);
 Token *new_token(TokenKind kind, Token *cur, char *str);
-Token *tokenize(void);
+void *tokenize(void);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_ident(void);
 Node *new_node_num(int val);

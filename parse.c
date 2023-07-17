@@ -9,9 +9,14 @@ Node *program(void){
 	}
 	code[i] = NULL;
 }
-// stmt = expr ";"
+// stmt = expr ";" | "return" expr ";"
 Node *stmt(void){
-	Node *node = expr();
+	Node *node;
+	if(consume("return")){
+		node = new_node(ND_RETURN, expr(), NULL);
+	}else{
+		node = expr();
+	}
 	expect(";");
 	return node;
 }
@@ -84,12 +89,12 @@ Node *mul(void){
 		}
 	}
 }
-// unary = ("+" | "-")? primary
+// unary = ("+" | "-")* primary
 Node *unary(void){
 	if (consume("+")){
-		return primary();
+		return unary();
 	}else if (consume("-")){
-		return new_node(ND_SUB, new_node_num(0), primary());
+		return new_node(ND_SUB, new_node_num(0), unary());
 	}
 	return primary();
 }
@@ -159,7 +164,7 @@ void error_at(char *loc, char *fmt, ...){
 // 複数文字の演算子に対応
 // memcmpじゃなくstrncmpとかでよくね？？？？
 bool consume(char *op){
-	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
+	if ((token->kind != TK_RESERVED && token->kind != TK_RETURN) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
 		return false;
 	}
 	token = token->next;
@@ -177,7 +182,7 @@ void expect(char *op){
 // 数字が来ると想定される場所で(演算子の後)、数字を返す
 int expect_number(void){
 	if (token->kind != TK_NUM)
-		printf(token->str, "数ではありません");
+		error_at(token->str, "数ではありません");
 	int val = token->val;
 	token = token->next;
 	return val;
