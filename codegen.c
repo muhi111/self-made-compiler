@@ -19,10 +19,10 @@ void gen(Node *node){
 		printf("  ret\n");
 		return;
 	case ND_BLOCK:
-		while(node->next){
-			gen(node->next);
+		while(node->block_next){
+			node = node->block_next;
+			gen(node);
 			printf("  pop rax\n");
-			node = node->next;
 		}
 		return;
 	case ND_IF:
