@@ -2,12 +2,21 @@
 
 // program = stmt*
 Node *program(void){
-	int i = 0;
+	Node head = {};
+	Node *cur = &head;
 	while (!at_eof()){
-		code[i] = stmt();
-		i++;
+		cur->next = stmt();
+		cur = cur->next;
 	}
-	code[i] = NULL;
+	cur = calloc(1, sizeof(Node));
+	cur = NULL;
+	return head.next;
+	// int i = 0;
+	// while(!at_eof()){
+	// 	code[i] = stmt();
+	// 	i++;
+	// }
+	// code[i] = NULL;
 }
 // stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
 //       | "while" "(" expr ")" stmt | "for" "(" expr ";" expr ";" expr ")" stmt
@@ -23,12 +32,13 @@ Node *stmt(void){
 		node = new_node(ND_BLOCK, NULL, NULL);
 		while (1){
 			if (consume("}")){
-				cur->next = NULL;
-				node->next = head.next;
+				cur = calloc(1, sizeof(Node));
+				cur = NULL;
+				node->block_next = head.block_next;
 				break;
 			}
-			cur->next = stmt();
-			cur = cur->next;
+			cur->block_next = stmt();
+			cur = cur->block_next;
 		}
 	}else if(consume("if")){
 		node = new_node(ND_IF, NULL, NULL);

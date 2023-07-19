@@ -2,7 +2,7 @@
 
 char *user_input;
 Token *token;
-Node *code[100];
+// Node *code[100];
 LVar *locals;
 int uuid;
 
@@ -16,7 +16,7 @@ int main(int argc, char **argv){
 	user_input = argv[1];
 	tokenize();
 	locals = calloc(1, sizeof(LVar));
-	program();
+	Node *node = program();
 
 	// アセンブリの前半部分を出力
 	printf(".intel_syntax noprefix\n");
@@ -29,8 +29,10 @@ int main(int argc, char **argv){
 	printf("  mov rbp, rsp\n");
 	printf("  sub rsp, 208\n");
 
-	for (int i = 0; code[i]; i++){
-		gen(code[i]);
+	// for (int i = 0; code[i]; i++){
+	while(node){
+		gen(node);
+		node = node->next;
 
 		// 式の評価結果としてスタックに一つの値が残っている
 		// はずなので、スタックが溢れないようにポップしておく

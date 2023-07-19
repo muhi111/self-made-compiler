@@ -43,17 +43,18 @@ typedef enum{
 } NodeKind;
 typedef struct Node Node;
 struct Node{
-	NodeKind kind; // ノードの型
-	Node *lhs;	   // 左辺
-	Node *rhs;	   // 右辺
-	Node *next;
-	Node *cond;	   // if,while,forで使う
-	Node *then;    // if,while,forで使う
-	Node *els;     // ifで使う
-	Node *init;    // forで使う
-	Node *inc;     // forで使う
-	int val;	   // kindがND_NUMの場合のみ使う
-	int offset;	   // kindがND_LVARの場合のみ使う
+	NodeKind kind;     // ノードの型
+	Node *lhs;	       // 左辺
+	Node *rhs;	       // 右辺
+	Node *block_next;  // ブロック内での次のstmtを指す
+	Node *next;        // 次のstmtを指す
+	Node *cond;	       // if,while,forで使う
+	Node *then;        // if,while,forで使う
+	Node *els;         // ifで使う
+	Node *init;        // forで使う
+	Node *inc;         // forで使う
+	int val;	       // kindがND_NUMの場合のみ使う
+	int offset;	       // kindがND_LVARの場合のみ使う
 };
 
 // ローカル変数の型
@@ -91,6 +92,7 @@ LVar *find_lvar(Token *tok);
 
 extern Token *token;
 extern char *user_input;
-extern Node *code[100];
 extern LVar *locals;
 extern int uuid;
+
+// extern Node *code[100];
