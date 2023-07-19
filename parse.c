@@ -10,7 +10,7 @@ Node *program(void){
 	code[i] = NULL;
 }
 // stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
-//       | "while" "(" expr ")" stmt
+//       | "while" "(" expr ")" stmt | "for" "(" expr ";" expr ";" expr ")" stmt
 Node *stmt(void){
 	Node *node;
 	if(consume("return")){
@@ -18,15 +18,17 @@ Node *stmt(void){
 		expect(";");
 	}else if(consume("{")){
 		int i = 0;
+		Node head = {};
+		Node *cur = &head;
 		node = new_node(ND_BLOCK, NULL, NULL);
-		node->block = calloc(1, sizeof(Node *));
 		while (1){
 			if (consume("}")){
-				node->block[i] = NULL;
+				cur->next = NULL;
+				node->next = head.next;
 				break;
 			}
-			node->block[i] = stmt();
-			i++;
+			cur->next = stmt();
+			cur = cur->next;
 		}
 	}else if(consume("if")){
 		node = new_node(ND_IF, NULL, NULL);
@@ -41,6 +43,16 @@ Node *stmt(void){
 		node = new_node(ND_WHILE, NULL, NULL);
 		expect("(");
 		node->cond = expr();
+		expect(")");
+		node->then = stmt();
+	}else if(consume("for")){
+		node = new_node(ND_FOR, NULL, NULL);
+		expect("(");
+		node->init = expr();
+		expect(";");
+		node->cond = expr();
+		expect(";");
+		node->inc = expr();
 		expect(")");
 		node->then = stmt();
 	}else{

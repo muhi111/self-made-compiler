@@ -2,7 +2,7 @@
 
 void gen_lval(Node *node){
 	if (node->kind != ND_LVAR){
-		fprintf(stderr, "代入の左辺値が変数ではありません");
+		fprintf(stderr, "代入の左辺値が変数ではありません\n");
 	}
 	printf("  mov rax, rbp\n");
 	printf("  sub rax, %d\n", node->offset);
@@ -19,9 +19,10 @@ void gen(Node *node){
 		printf("  ret\n");
 		return;
 	case ND_BLOCK:
-		for (int i = 0; node->block[i];i++){
-			gen(node->block[i]);
+		while(node->next){
+			gen(node->next);
 			printf("  pop rax\n");
+			node = node->next;
 		}
 		return;
 	case ND_IF:
@@ -50,6 +51,19 @@ void gen(Node *node){
 		printf("  cmp rax, 0\n");
 		printf("  je  .Lend%d\n", uuid + 1);
 		gen(node->then);
+		printf("  jmp .Lbegin%d\n", uuid);
+		printf(".Lend%d:\n", uuid + 1);
+		uuid += 2;
+		return;
+	case ND_FOR:
+		gen(node->init);
+		printf(".Lbegin%d:\n", uuid);
+		gen(node->cond);
+		printf("  pop rax\n");
+		printf("  cmp rax, 0\n");
+		printf("  je  .Lend%d\n", uuid + 1);
+		gen(node->then);
+		gen(node->inc);
 		printf("  jmp .Lbegin%d\n", uuid);
 		printf(".Lend%d:\n", uuid + 1);
 		uuid += 2;

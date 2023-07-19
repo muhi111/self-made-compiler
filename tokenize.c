@@ -12,12 +12,10 @@ Token *new_token(TokenKind kind, Token *cur, char *str){
 // スペースを飛ばして式をtoken化して線形リストに格納する
 void *tokenize(void){
 	char *p = user_input;
-	Token head;
-	head.next = NULL;
+	Token head = {};
 	Token *cur = &head;
 
 	while (*p){
-		// fprintf(stderr,"%s\n", p);
 		if (isspace(*p)){
 			p++;
 			continue;
@@ -55,6 +53,11 @@ void *tokenize(void){
 			cur->len = 5;
 			p += 5;
 			continue;
+		}else if(strncmp(p, "for", 3) == 0){
+			cur = new_token(TK_CONTROL, cur, p);
+			cur->len = 3;
+			p += 3;
+			continue;
 		}else if (isalpha(*p)){
 			int len = 0;
 			do{
@@ -69,7 +72,6 @@ void *tokenize(void){
 			cur->val = strtol(p, &p, 10);
 			continue;
 		}
-		error_at(p,"トークナイズできません");
 	}
 	new_token(TK_EOF, cur, p);
 	token =  head.next;

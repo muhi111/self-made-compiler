@@ -39,16 +39,19 @@ typedef enum{
 	ND_BLOCK,
 	ND_IF,
 	ND_WHILE,
+	ND_FOR,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
 	NodeKind kind; // ノードの型
 	Node *lhs;	   // 左辺
 	Node *rhs;	   // 右辺
-	Node **block;  // {}で使う
-	Node *cond;    // if,whileで使う
-	Node *then;    // if,whileで使う
+	Node *next;
+	Node *cond;	   // if,while,forで使う
+	Node *then;    // if,while,forで使う
 	Node *els;     // ifで使う
+	Node *init;    // forで使う
+	Node *inc;     // forで使う
 	int val;	   // kindがND_NUMの場合のみ使う
 	int offset;	   // kindがND_LVARの場合のみ使う
 };
