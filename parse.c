@@ -9,7 +9,7 @@ Node *program(void){
 	}
 	code[i] = NULL;
 }
-// stmt = expr ";" | "return" expr ";" | "{" stmt* "}""
+// stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
 Node *stmt(void){
 	Node *node;
 	if(consume("return")){
@@ -18,6 +18,7 @@ Node *stmt(void){
 	}else if(consume("{")){
 		int i = 0;
 		node = new_node(ND_BLOCK, NULL, NULL);
+		node->block = calloc(1, sizeof(Node *));
 		while (1){
 			if (consume("}")){
 				node->block[i] = NULL;
@@ -25,6 +26,15 @@ Node *stmt(void){
 			}
 			node->block[i] = stmt();
 			i++;
+		}
+	}else if(consume("if")){
+		node = new_node(ND_IF, NULL, NULL);
+		expect("(");
+		node->cond = expr();
+		expect(")");
+		node->then = stmt();
+		if(consume("else")){
+			node->els = stmt();
 		}
 	}else{
 		node = expr();
@@ -176,7 +186,7 @@ void error_at(char *loc, char *fmt, ...){
 // 複数文字の演算子に対応
 // memcmpじゃなくstrncmpとかでよくね？？？？
 bool consume(char *op){
-	if ((token->kind != TK_RESERVED && token->kind != TK_RETURN && token->kind != TK_BLOCK) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
+	if ((token->kind != TK_RESERVED && token->kind != TK_CONTROL) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
 		return false;
 	}
 	token = token->next;

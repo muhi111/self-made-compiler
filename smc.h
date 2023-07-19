@@ -11,8 +11,7 @@ typedef enum{
 	TK_NUM,		 // 整数トークン
 	TK_EOF,		 // 入力の終わりを表すトークン
 	TK_IDENT,	 // 識別子
-	TK_RETURN,
-	TK_BLOCK,
+	TK_CONTROL,  // 制御構造
 } TokenKind;
 typedef struct Token Token;
 struct Token{
@@ -38,13 +37,17 @@ typedef enum{
 	ND_NUM,	   // 整数
 	ND_RETURN,
 	ND_BLOCK,
+	ND_IF,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
 	NodeKind kind; // ノードの型
 	Node *lhs;	   // 左辺
 	Node *rhs;	   // 右辺
-	Node *block[100];
+	Node **block;
+	Node *cond;
+	Node *then;
+	Node *els;
 	int val;	   // kindがND_NUMの場合のみ使う
 	int offset;	   // kindがND_LVARの場合のみ使う
 };
@@ -83,7 +86,7 @@ void gen(Node *node);
 LVar *find_lvar(Token *tok);
 
 extern Token *token;
-// ポインタで宣言してメモリ確保せずに代入する行為って許容されるんだっけ？？？？
 extern char *user_input;
 extern Node *code[100];
 extern LVar *locals;
+extern int uuid;

@@ -17,6 +17,7 @@ void *tokenize(void){
 	Token *cur = &head;
 
 	while (*p){
+		// fprintf(stderr,"%s\n", p);
 		if (isspace(*p)){
 			p++;
 			continue;
@@ -27,7 +28,7 @@ void *tokenize(void){
 			continue;
 		}else if (ispunct(*p)){
 			if(*p == '{' || *p == '}'){
-				cur = new_token(TK_BLOCK, cur, p);
+				cur = new_token(TK_CONTROL, cur, p);
 			}else{
 				cur = new_token(TK_RESERVED, cur, p);
 			}
@@ -35,9 +36,19 @@ void *tokenize(void){
 			p++;
 			continue;
 		}else if (strncmp(p, "return", 6) == 0 && isspace(p[6])){
-			cur = new_token(TK_RETURN, cur, p);
+			cur = new_token(TK_CONTROL, cur, p);
 			cur->len = 6;
 			p += 6;
+			continue;
+		}else if(strncmp(p, "if", 2) == 0){
+			cur = new_token(TK_CONTROL, cur, p);
+			cur->len = 2;
+			p += 2;
+			continue;
+		}else if(strncmp(p, "else", 4) == 0){
+			cur = new_token(TK_CONTROL, cur, p);
+			cur->len = 4;
+			p += 4;
 			continue;
 		}else if (isalpha(*p)){
 			int len = 0;

@@ -24,6 +24,25 @@ void gen(Node *node){
 			printf("  pop rax\n");
 		}
 		return;
+	case ND_IF:
+		gen(node->cond);
+		printf("  pop rax\n");
+		printf("  cmp rax, 0\n");
+		if(node->els){
+			printf("  je  .Lelse%d\n", uuid);
+			gen(node->then);
+			printf("  jmp .Lend%d\n", uuid + 1);
+			printf(".Lelse%d:\n", uuid);
+			gen(node->els);
+			printf(".Lend%d:\n", uuid + 1);
+			uuid += 2;
+		}else{
+			printf("  je  .Lend%d\n", uuid);
+			gen(node->then);
+			printf(".Lend%d:\n", uuid);
+			uuid += 1;
+		}
+		return;
 	case ND_NUM:
 		printf("  push %d\n", node->val);
 		return;
