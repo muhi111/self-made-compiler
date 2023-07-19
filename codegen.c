@@ -18,6 +18,12 @@ void gen(Node *node){
 		printf("  pop rbp\n");
 		printf("  ret\n");
 		return;
+	case ND_BLOCK:
+		for (int i = 0; node->block[i];i++){
+			gen(node->block[i]);
+			printf("  pop rax\n");
+		}
+		return;
 	case ND_NUM:
 		printf("  push %d\n", node->val);
 		return;

@@ -9,15 +9,27 @@ Node *program(void){
 	}
 	code[i] = NULL;
 }
-// stmt = expr ";" | "return" expr ";"
+// stmt = expr ";" | "return" expr ";" | "{" stmt* "}""
 Node *stmt(void){
 	Node *node;
 	if(consume("return")){
 		node = new_node(ND_RETURN, expr(), NULL);
+		expect(";");
+	}else if(consume("{")){
+		int i = 0;
+		node = new_node(ND_BLOCK, NULL, NULL);
+		while (1){
+			if (consume("}")){
+				node->block[i] = NULL;
+				break;
+			}
+			node->block[i] = stmt();
+			i++;
+		}
 	}else{
 		node = expr();
+		expect(";");
 	}
-	expect(";");
 	return node;
 }
 // expr = assign
@@ -164,7 +176,7 @@ void error_at(char *loc, char *fmt, ...){
 // 複数文字の演算子に対応
 // memcmpじゃなくstrncmpとかでよくね？？？？
 bool consume(char *op){
-	if ((token->kind != TK_RESERVED && token->kind != TK_RETURN) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
+	if ((token->kind != TK_RESERVED && token->kind != TK_RETURN && token->kind != TK_BLOCK) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
 		return false;
 	}
 	token = token->next;

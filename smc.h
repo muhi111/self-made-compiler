@@ -12,6 +12,7 @@ typedef enum{
 	TK_EOF,		 // 入力の終わりを表すトークン
 	TK_IDENT,	 // 識別子
 	TK_RETURN,
+	TK_BLOCK,
 } TokenKind;
 typedef struct Token Token;
 struct Token{
@@ -23,8 +24,7 @@ struct Token{
 };
 
 // 抽象構文木
-typedef enum
-{
+typedef enum{
 	ND_ADD,	   // +
 	ND_SUB,	   // -
 	ND_MUL,	   // *
@@ -37,12 +37,14 @@ typedef enum
 	ND_LVAR,   // ローカル変数
 	ND_NUM,	   // 整数
 	ND_RETURN,
+	ND_BLOCK,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
 	NodeKind kind; // ノードの型
 	Node *lhs;	   // 左辺
 	Node *rhs;	   // 右辺
+	Node *block[100];
 	int val;	   // kindがND_NUMの場合のみ使う
 	int offset;	   // kindがND_LVARの場合のみ使う
 };

@@ -26,7 +26,11 @@ void *tokenize(void){
 			p += 2;
 			continue;
 		}else if (ispunct(*p)){
-			cur = new_token(TK_RESERVED, cur, p);
+			if(*p == '{' || *p == '}'){
+				cur = new_token(TK_BLOCK, cur, p);
+			}else{
+				cur = new_token(TK_RESERVED, cur, p);
+			}
 			cur->len = 1;
 			p++;
 			continue;
