@@ -50,6 +50,11 @@ void *tokenize(void){
 			cur->len = 4;
 			p += 4;
 			continue;
+		}else if(strncmp(p, "while", 5) == 0){
+			cur = new_token(TK_CONTROL, cur, p);
+			cur->len = 5;
+			p += 5;
+			continue;
 		}else if (isalpha(*p)){
 			int len = 0;
 			do{

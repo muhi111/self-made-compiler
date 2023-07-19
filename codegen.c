@@ -43,6 +43,17 @@ void gen(Node *node){
 			uuid += 1;
 		}
 		return;
+	case ND_WHILE:
+		printf(".Lbegin%d:\n", uuid);
+		gen(node->cond);
+		printf("  pop rax\n");
+		printf("  cmp rax, 0\n");
+		printf("  je  .Lend%d\n", uuid + 1);
+		gen(node->then);
+		printf("  jmp .Lbegin%d\n", uuid);
+		printf(".Lend%d:\n", uuid + 1);
+		uuid += 2;
+		return;
 	case ND_NUM:
 		printf("  push %d\n", node->val);
 		return;

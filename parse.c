@@ -10,6 +10,7 @@ Node *program(void){
 	code[i] = NULL;
 }
 // stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
+//       | "while" "(" expr ")" stmt
 Node *stmt(void){
 	Node *node;
 	if(consume("return")){
@@ -36,6 +37,12 @@ Node *stmt(void){
 		if(consume("else")){
 			node->els = stmt();
 		}
+	}else if(consume("while")){
+		node = new_node(ND_WHILE, NULL, NULL);
+		expect("(");
+		node->cond = expr();
+		expect(")");
+		node->then = stmt();
 	}else{
 		node = expr();
 		expect(";");

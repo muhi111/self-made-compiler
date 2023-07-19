@@ -38,16 +38,17 @@ typedef enum{
 	ND_RETURN,
 	ND_BLOCK,
 	ND_IF,
+	ND_WHILE,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
 	NodeKind kind; // ノードの型
 	Node *lhs;	   // 左辺
 	Node *rhs;	   // 右辺
-	Node **block;
-	Node *cond;
-	Node *then;
-	Node *els;
+	Node **block;  // {}で使う
+	Node *cond;    // if,whileで使う
+	Node *then;    // if,whileで使う
+	Node *els;     // ifで使う
 	int val;	   // kindがND_NUMの場合のみ使う
 	int offset;	   // kindがND_LVARの場合のみ使う
 };
