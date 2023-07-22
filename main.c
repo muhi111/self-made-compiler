@@ -2,7 +2,6 @@
 
 char *user_input;
 Token *token;
-// Node *code[100];
 LVar *locals;
 int uuid;
 
@@ -29,7 +28,6 @@ int main(int argc, char **argv){
 	printf("  mov rbp, rsp\n");
 	printf("  sub rsp, 208\n");
 
-	// for (int i = 0; code[i]; i++){
 	while(node){
 		gen(node);
 		node = node->next;

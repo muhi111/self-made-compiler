@@ -19,9 +19,10 @@ void gen(Node *node){
 		printf("  ret\n");
 		return;
 	case ND_BLOCK:
-		while(node->block_next){
-			node = node->block_next;
+		node = node->block_next;
+		while(node){
 			gen(node);
+			node = node->block_next;
 			printf("  pop rax\n");
 		}
 		return;
@@ -67,6 +68,10 @@ void gen(Node *node){
 		printf("  jmp .Lbegin%d\n", uuid);
 		printf(".Lend%d:\n", uuid + 1);
 		uuid += 2;
+		return;
+	case ND_FUNCCALL:
+		printf("  call %s\n", node->funcname);
+		printf("  push rax\n");
 		return;
 	case ND_NUM:
 		printf("  push %d\n", node->val);

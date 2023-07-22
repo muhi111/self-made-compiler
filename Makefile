@@ -11,6 +11,6 @@ test: smc
 	./test.sh
 
 clean:
-	rm -f smc *.o tmp* a.out
+	rm -f smc *.o *.s tmp* a.out
 
 .PHONY: test clean

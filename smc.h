@@ -40,6 +40,7 @@ typedef enum{
 	ND_IF,
 	ND_WHILE,
 	ND_FOR,
+	ND_FUNCCALL,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
@@ -53,7 +54,8 @@ struct Node{
 	Node *els;         // ifで使う
 	Node *init;        // forで使う
 	Node *inc;         // forで使う
-	int val;	       // kindがND_NUMの場合のみ使う
+	char *funcname;
+	int val;		   // kindがND_NUMの場合のみ使う
 	int offset;	       // kindがND_LVARの場合のみ使う
 };
 
@@ -94,5 +96,3 @@ extern Token *token;
 extern char *user_input;
 extern LVar *locals;
 extern int uuid;
-
-// extern Node *code[100];

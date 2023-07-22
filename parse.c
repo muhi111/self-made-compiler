@@ -11,12 +11,6 @@ Node *program(void){
 	cur = calloc(1, sizeof(Node));
 	cur = NULL;
 	return head.next;
-	// int i = 0;
-	// while(!at_eof()){
-	// 	code[i] = stmt();
-	// 	i++;
-	// }
-	// code[i] = NULL;
 }
 // stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
 //       | "while" "(" expr ")" stmt | "for" "(" expr ";" expr ";" expr ")" stmt
@@ -149,13 +143,23 @@ Node *unary(void){
 	}
 	return primary();
 }
-// primary = num | ident | "(" expr ")"
+// primary = num | ident("(" ")")? | "(" expr ")"
 Node *primary(void){
+	Node *node;
 	if (consume("(")){
-		Node *node = expr();
+		node = expr();
 		expect(")");
 		return node;
 	}else if(token->kind == TK_IDENT){
+		if(token->next->str[0] == '('){
+			node = new_node(ND_FUNCCALL, NULL, NULL);
+			node->funcname = malloc(sizeof(char) * (token->len + 1));
+			strncpy(node->funcname, token->str, token->len);
+			token = token->next;
+			expect("(");
+			expect(")");
+			return node;
+		}
 		return new_node_ident();
 	}
 	return new_node_num(expect_number());
@@ -212,8 +216,6 @@ void error_at(char *loc, char *fmt, ...){
 }
 
 // 演算子の場合tokenを進める
-// 複数文字の演算子に対応
-// memcmpじゃなくstrncmpとかでよくね？？？？
 bool consume(char *op){
 	if ((token->kind != TK_RESERVED && token->kind != TK_CONTROL) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0){
 		return false;
@@ -223,7 +225,6 @@ bool consume(char *op){
 }
 
 // やってること自体はconsumeと同じ,TFを返すかどうかが違い
-// 複数文字の演算子に対応
 void expect(char *op){
 	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
 		error_at(token->str,"'%s'ではありません", op);
