@@ -25,7 +25,7 @@ assert 55 '{ i=0; j=0; for (i=0; i<=10; i=i+1) j=i+j; return j; }'
 assert 10 '{ i=0; while(i<10) { i=i+1; } return i; }'
 assert 3 'return foo(3);'
 assert 5 'return add(2, 3);'
-# assert 5 'return add(sub(3,1),3);'
+assert 5 'return add(sub(3,1),3);'
 assert 21 'return add_6(1, 2, 3, 4, 5, 6);'
 assert 3 '{{a=1;b=2;} return a+b;}'
 

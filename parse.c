@@ -165,8 +165,7 @@ Node *func(void){
 	token = token->next;
 	expect("(");
 	if(consume(")")){
-		node->args_next = calloc(1, sizeof(Node));
-		node->args_next = NULL;
+		node->args = NULL;
 		return node;
 	}
 	Node head = {};
@@ -176,7 +175,7 @@ Node *func(void){
 		cur = cur->args_next;
 		if(consume(")")){
 			cur->args_next = NULL;
-			node->args_next = head.args_next;
+			node->args = head.args_next;
 			break;
 		}else{
 			expect(",");

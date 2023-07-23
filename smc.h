@@ -56,6 +56,7 @@ struct Node{
 	Node *els;         // ifで使う
 	Node *init;        // forで使う
 	Node *inc;         // forで使う
+	Node *args;        // 関数をの引数を読み込むためのもの
 	Node *args_next;   // 次の関数の引数を表わす
 	char *funcname;
 	int val;		   // kindがND_NUMの場合のみ使う

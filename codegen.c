@@ -72,7 +72,7 @@ void gen(Node *node){
 		uuid += 2;
 		return;
 	case ND_FUNCCALL:
-		Node *node_temp = node->args_next;
+		Node *node_temp = node->args;
 		int i = 0;
 		while (node_temp){
 			gen(node_temp);
