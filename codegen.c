@@ -1,5 +1,7 @@
 #include "smc.h"
 
+char argreg[6][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_lval(Node *node){
 	if (node->kind != ND_LVAR){
 		fprintf(stderr, "代入の左辺値が変数ではありません\n");
@@ -70,6 +72,14 @@ void gen(Node *node){
 		uuid += 2;
 		return;
 	case ND_FUNCCALL:
+		Node *node_temp = node->args_next;
+		int i = 0;
+		while (node_temp){
+			gen(node_temp);
+			printf("  pop %s\n", argreg[i]);
+			node_temp = node_temp->args_next;
+			i++;
+		}
 		printf("  call %s\n", node->funcname);
 		printf("  push rax\n");
 		return;

@@ -20,13 +20,11 @@ Node *stmt(void){
 		node = new_node(ND_RETURN, expr(), NULL);
 		expect(";");
 	}else if(consume("{")){
-		int i = 0;
 		Node head = {};
 		Node *cur = &head;
 		node = new_node(ND_BLOCK, NULL, NULL);
 		while (1){
 			if (consume("}")){
-				cur = calloc(1, sizeof(Node));
 				cur = NULL;
 				node->block_next = head.block_next;
 				break;
@@ -143,7 +141,8 @@ Node *unary(void){
 	}
 	return primary();
 }
-// primary = num | ident("(" ")")? | "(" expr ")"
+// primary = num | ident args? | "(" expr ")"
+// args =  "(" expr ( "," expr )* ")"
 Node *primary(void){
 	Node *node;
 	if (consume("(")){
@@ -152,17 +151,38 @@ Node *primary(void){
 		return node;
 	}else if(token->kind == TK_IDENT){
 		if(token->next->str[0] == '('){
-			node = new_node(ND_FUNCCALL, NULL, NULL);
-			node->funcname = malloc(sizeof(char) * (token->len + 1));
-			strncpy(node->funcname, token->str, token->len);
-			token = token->next;
-			expect("(");
-			expect(")");
-			return node;
+			return func();
 		}
 		return new_node_ident();
 	}
 	return new_node_num(expect_number());
+}
+
+Node *func(void){
+	Node *node = new_node(ND_FUNCCALL, NULL, NULL);
+	node->funcname = malloc(sizeof(char) * (token->len + 1));
+	strncpy(node->funcname, token->str, token->len);
+	token = token->next;
+	expect("(");
+	if(consume(")")){
+		node->args_next = calloc(1, sizeof(Node));
+		node->args_next = NULL;
+		return node;
+	}
+	Node head = {};
+	Node *cur = &head;
+	while(1){
+		cur->args_next = expr();
+		cur = cur->args_next;
+		if(consume(")")){
+			cur->args_next = NULL;
+			node->args_next = head.args_next;
+			break;
+		}else{
+			expect(",");
+		}
+	}
+	return node;
 }
 
 // 抽象構造木の演算子の部分を作る
