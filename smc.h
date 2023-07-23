@@ -48,6 +48,7 @@ struct Node{
 	NodeKind kind;     // ノードの型
 	Node *lhs;	       // 左辺
 	Node *rhs;	       // 右辺
+	Node *block;       // ブロックで分岐するためのもの
 	Node *block_next;  // ブロック内での次のstmtを指す
 	Node *next;        // 次のstmtを指す
 	Node *cond;	       // if,while,forで使う

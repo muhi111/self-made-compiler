@@ -21,7 +21,7 @@ void gen(Node *node){
 		printf("  ret\n");
 		return;
 	case ND_BLOCK:
-		node = node->block_next;
+		node = node->block;
 		while(node){
 			gen(node);
 			node = node->block_next;

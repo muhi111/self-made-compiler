@@ -20,13 +20,13 @@ Node *stmt(void){
 		node = new_node(ND_RETURN, expr(), NULL);
 		expect(";");
 	}else if(consume("{")){
+		node = new_node(ND_BLOCK, NULL, NULL);
 		Node head = {};
 		Node *cur = &head;
-		node = new_node(ND_BLOCK, NULL, NULL);
 		while (1){
 			if (consume("}")){
 				cur = NULL;
-				node->block_next = head.block_next;
+				node->block = head.block_next;
 				break;
 			}
 			cur->block_next = stmt();

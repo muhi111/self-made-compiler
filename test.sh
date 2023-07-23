@@ -27,6 +27,6 @@ assert 3 'return foo(3);'
 assert 5 'return add(2, 3);'
 # assert 5 'return add(sub(3,1),3);'
 assert 21 'return add_6(1, 2, 3, 4, 5, 6);'
-# assert 0 '{{a=1;b=2}return 3;}'
+assert 3 '{{a=1;b=2;} return a+b;}'
 
 echo OK
