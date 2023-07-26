@@ -41,7 +41,7 @@ typedef enum{
 	ND_WHILE,
 	ND_FOR,
 	ND_FUNCCALL,
-	ND_FUNCARG,
+	ND_FUNCDEF,
 } NodeKind;
 typedef struct Node Node;
 struct Node{
@@ -58,6 +58,7 @@ struct Node{
 	Node *inc;         // forで使う
 	Node *args;        // 関数をの引数を読み込むためのもの
 	Node *args_next;   // 次の関数の引数を表わす
+	Node *func_next;   // 次の関数の宣言を表わす
 	char *funcname;
 	int val;		   // kindがND_NUMの場合のみ使う
 	int offset;	       // kindがND_LVARの場合のみ使う
@@ -83,6 +84,7 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_ident(void);
 Node *new_node_num(int val);
 Node *program(void);
+Node *function();
 Node *stmt(void);
 Node *expr(void);
 Node *assign(void);
@@ -92,7 +94,8 @@ Node *add(void);
 Node *mul(void);
 Node *unary(void);
 Node *primary(void);
-Node *func(void);
+Node *func_call(void);
+Node *new_node_func(void);
 void gen_lval(Node *node);
 void gen(Node *node);
 LVar *find_lvar(Token *tok);

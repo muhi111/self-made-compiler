@@ -1,16 +1,34 @@
 #include "smc.h"
 
-// program = stmt*
+// program = function*
 Node *program(void){
 	Node head = {};
 	Node *cur = &head;
 	while (!at_eof()){
+		cur->func_next = function();
+		cur = cur->func_next;
+	}
+	cur->func_next = NULL;
+	return head.func_next;
+}
+// // indent"("")" "{" stmt* "}"
+Node *function(){
+	Node *node = new_node_func();
+	Node head = {};
+	Node *cur = &head;
+	expect("(");
+	expect(")");
+	expect("{");
+	while (1){
 		cur->next = stmt();
 		cur = cur->next;
+		if(consume("}")){
+			cur = NULL;
+			node->next = head.next;
+			break;
+		}
 	}
-	cur = calloc(1, sizeof(Node));
-	cur = NULL;
-	return head.next;
+	return node;
 }
 // stmt = expr ";" | "return" expr ";" | "{" stmt* "}" | "if" "(" expr ")" stmt ("else" stmt)?
 //       | "while" "(" expr ")" stmt | "for" "(" expr ";" expr ";" expr ")" stmt
@@ -151,14 +169,14 @@ Node *primary(void){
 		return node;
 	}else if(token->kind == TK_IDENT){
 		if(token->next->str[0] == '('){
-			return func();
+			return func_call();
 		}
 		return new_node_ident();
 	}
 	return new_node_num(expect_number());
 }
 
-Node *func(void){
+Node *func_call(void){
 	Node *node = new_node(ND_FUNCCALL, NULL, NULL);
 	node->funcname = malloc(sizeof(char) * (token->len + 1));
 	strncpy(node->funcname, token->str, token->len);
@@ -212,6 +230,15 @@ Node *new_node_ident(void){
 	return node;
 }
 
+Node *new_node_func(void){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_FUNCDEF;
+	node->funcname = malloc(sizeof(char) * (token->len + 1));
+	strncpy(node->funcname, token->str, token->len);
+	token = token->next;
+	return node;
+}
+
 // 抽象構造木の数字の部分を作る
 Node *new_node_num(int val){
 	Node *node = calloc(1, sizeof(Node));
@@ -245,7 +272,7 @@ bool consume(char *op){
 
 // やってること自体はconsumeと同じ,TFを返すかどうかが違い
 void expect(char *op){
-	if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
+	if ((token->kind != TK_RESERVED && token->kind != TK_CONTROL) || strlen(op) != token->len || memcmp(token->str, op, token->len) != 0)
 		error_at(token->str,"'%s'ではありません", op);
 	token = token->next;
 }
