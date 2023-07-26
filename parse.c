@@ -14,11 +14,13 @@ Node *program(void){
 // // indent"("")" "{" stmt* "}"
 Node *function(){
 	Node *node = new_node_func();
-	Node head = {};
-	Node *cur = &head;
+	node->lvar = calloc(1, sizeof(LVar));
+	locals = node->lvar;
 	expect("(");
 	expect(")");
 	expect("{");
+	Node head = {};
+	Node *cur = &head;
 	while (1){
 		cur->next = stmt();
 		cur = cur->next;
@@ -178,7 +180,7 @@ Node *primary(void){
 
 Node *func_call(void){
 	Node *node = new_node(ND_FUNCCALL, NULL, NULL);
-	node->funcname = malloc(sizeof(char) * (token->len + 1));
+	node->funcname = calloc((token->len + 1), sizeof(char));
 	strncpy(node->funcname, token->str, token->len);
 	token = token->next;
 	expect("(");
@@ -219,7 +221,8 @@ Node *new_node_ident(void){
 		node->offset = lvar->offset;
 	}else{
 		lvar = calloc(1, sizeof(LVar));
-		lvar->next = locals;
+		lvar->prev = locals;
+		lvar->next = NULL;
 		lvar->name = token->str;
 		lvar->len = token->len;
 		lvar->offset = locals->offset + 8;
@@ -233,7 +236,7 @@ Node *new_node_ident(void){
 Node *new_node_func(void){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_FUNCDEF;
-	node->funcname = malloc(sizeof(char) * (token->len + 1));
+	node->funcname = calloc((token->len + 1), sizeof(char));
 	strncpy(node->funcname, token->str, token->len);
 	token = token->next;
 	return node;
@@ -292,7 +295,7 @@ bool at_eof(void){
 }
 
 LVar *find_lvar(Token *tok){
-	for (LVar *var = locals; var; var = var->next)
+	for (LVar *var = locals; var; var = var->prev)
 		if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
 			return var;
 	return NULL;

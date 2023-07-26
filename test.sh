@@ -26,5 +26,6 @@ assert 10 'main(){ i=0; while(i<10) { i=i+1; } return i; }'
 assert 0 'main(){return 0;}'
 assert 1 'main(){i=1;return i;}'
 assert 0 'foo(){return 0;}main(){return foo();}'
+assert 6 'foo(){i=1;j=2;k=3;return i+j+k;}main(){a=foo();i=10;j=20;k=30;return a;}'
 
 echo OK

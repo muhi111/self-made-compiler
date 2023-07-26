@@ -2,7 +2,7 @@
 
 char *user_input;
 Token *token;
-LVar *locals;
+LVar *locals;  // 今指しているローカル変数
 int uuid;
 
 int main(int argc, char **argv){

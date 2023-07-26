@@ -18,6 +18,7 @@ void gen(Node *node){
 		printf("  push rbp\n");
 		printf("  mov rbp, rsp\n");
 		printf("  sub rsp, 208\n");
+		// ここでlocalsから変数を書き出そうとおもったけどどうしよう
 		node = node->next;
 		while (node){
 			gen(node);
