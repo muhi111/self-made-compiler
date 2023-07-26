@@ -75,6 +75,7 @@ struct LVar{
 	char *name;      // 変数の名前
 	int len;	     // 名前の長さ
 	int offset;      // RBPからのオフセット
+	int arg_flag;    // 関数の引数であることを示すフラグ　0以外なら引数
 };
 
 void error_at(char *loc, char *fmt, ...);

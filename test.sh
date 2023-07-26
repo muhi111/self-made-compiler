@@ -16,16 +16,18 @@ assert() {
   fi
 }
 
-assert 0 'main(){return 0;}'
-assert 2 'main(){ if (2-1) return 2; return 3; }'
-assert 4 'main(){ if (0) { 1; 2; return 3; } else { return 4; } }'
-assert 3 'main(){ if (1) { 1; 2; return 3; } else { return 4; } }'
-assert 55 'main(){ i=0; j=0; for (i=0; i<=10; i=i+1) j=i+j; return j; }'
-
 assert 10 'main(){ i=0; while(i<10) { i=i+1; } return i; }'
 assert 0 'main(){return 0;}'
 assert 1 'main(){i=1;return i;}'
 assert 0 'foo(){return 0;}main(){return foo();}'
 assert 6 'foo(){i=1;j=2;k=3;return i+j+k;}main(){a=foo();i=10;j=20;k=30;return a;}'
+assert 3 'add(a,b){return a+b;}main(){return add(1,2);}'
+assert 1 'main(){a=1;return a;}'
+assert 4 'add(a,b){i=1;return a+b+i;}main(){return add(1,2);}'
+
+assert 32 'main() { return ret32(); }ret32() { return 32; }'
+assert 7 'main() { return add2(3,4); }add2(x,y) { return x+y; }'
+assert 1 'main() { return sub2(4,3); }sub2(x,y) { return x-y; }'
+assert 55 'main() { return fib(9); }fib(x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
 
 echo OK

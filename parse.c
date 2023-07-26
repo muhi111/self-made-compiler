@@ -17,7 +17,26 @@ Node *function(){
 	node->lvar = calloc(1, sizeof(LVar));
 	locals = node->lvar;
 	expect("(");
-	expect(")");
+	if(consume(")")){
+	}else{
+		while(1){
+			LVar *lvar = calloc(1, sizeof(LVar));
+			lvar->prev = locals;
+			locals->next = lvar;
+			lvar->next = NULL;
+			lvar->arg_flag = 1;
+			lvar->name = token->str;
+			lvar->len = token->len;
+			lvar->offset = locals->offset + 8;
+			locals = lvar;
+			token = token->next;
+			if(consume(")")){
+				break;
+			}else{
+				expect(",");
+			}
+		}
+	}
 	expect("{");
 	Node head = {};
 	Node *cur = &head;
@@ -222,6 +241,7 @@ Node *new_node_ident(void){
 	}else{
 		lvar = calloc(1, sizeof(LVar));
 		lvar->prev = locals;
+		locals->next = lvar;
 		lvar->next = NULL;
 		lvar->name = token->str;
 		lvar->len = token->len;

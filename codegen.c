@@ -12,13 +12,26 @@ void gen_lval(Node *node){
 }
 
 void gen(Node *node){
+	int i;
 	switch (node->kind){
 	case ND_FUNCDEF:
 		printf("%s:\n", node->funcname);
 		printf("  push rbp\n");
 		printf("  mov rbp, rsp\n");
 		printf("  sub rsp, 208\n");
-		// ここでlocalsから変数を書き出そうとおもったけどどうしよう
+		LVar *temp = node->lvar->next;
+		i = 0;
+		while(temp && temp->arg_flag == 1){
+			printf("  mov rax, rbp\n");
+			printf("  sub rax, %d\n", temp->offset);
+			// printf("  push rax\n");
+			// printf("  pop rdi\n");
+			// printf("  pop rax\n");
+			printf("  mov [rax], %s\n", argreg[i]);
+			// printf("  push rdi\n"); // ??????
+			temp = temp->next;
+			i++;
+		}
 		node = node->next;
 		while (node){
 			gen(node);
@@ -86,7 +99,7 @@ void gen(Node *node){
 		return;
 	case ND_FUNCCALL:
 		Node *node_temp = node->args;
-		int i = 0;
+		i = 0;
 		while (node_temp){
 			gen(node_temp);
 			printf("  pop %s\n", argreg[i]);

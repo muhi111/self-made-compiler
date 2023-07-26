@@ -4,4 +4,3 @@ temp*
 *.o
 a.out
 .vscode/
-foo.c
