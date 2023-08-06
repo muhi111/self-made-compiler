@@ -45,6 +45,8 @@ typedef enum{
 	ND_FOR,
 	ND_FUNCCALL,
 	ND_FUNCDEF,
+	ND_ADDR,
+	ND_DEREF,
 } NodeKind;
 struct Node{
 	NodeKind kind;     // ノードの型

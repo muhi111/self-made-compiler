@@ -3,17 +3,33 @@
 char argreg[6][4] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node){
-	if (node->kind != ND_LVAR){
+	if (node->kind != ND_LVAR && node->kind !=  ND_DEREF){
 		fprintf(stderr, "代入の左辺値が変数ではありません\n");
 	}
-	printf("  mov rax, rbp\n");
-	printf("  sub rax, %d\n", node->offset);
-	printf("  push rax\n");
+	if(node->kind == ND_LVAR){
+		printf("  mov rax, rbp\n");
+		printf("  sub rax, %d\n", node->offset);
+		printf("  push rax\n");
+	}else if(node->kind == ND_DEREF){
+		gen_lval(node->lhs);
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
+		printf("  push rax\n");
+	}
 }
 
 void gen(Node *node){
 	int i;
 	switch (node->kind){
+	case ND_ADDR:
+		gen_lval(node->lhs);
+		return;
+	case ND_DEREF:
+		gen(node->lhs);
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
+		printf("  push rax\n");
+		return;
 	case ND_FUNCDEF:
 		printf("%s:\n", node->funcname);
 		printf("  push rbp\n");
