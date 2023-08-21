@@ -37,6 +37,7 @@ typedef enum{
 	ND_LE,	   // <=
 	ND_ASSIGN, // =
 	ND_LVAR,   // ローカル変数
+	ND_LVARDEF,
 	ND_NUM,	   // 整数
 	ND_RETURN,
 	ND_BLOCK,
@@ -89,6 +90,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str);
 void *tokenize(void);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_ident(void);
+Node *new_node_identdef(void);
 Node *new_node_num(int val);
 Node *program(void);
 Node *function();

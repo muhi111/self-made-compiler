@@ -58,6 +58,10 @@ void *tokenize(void){
 			cur->len = 3;
 			p += 3;
 			continue;
+		}else if(strncmp(p, "int", 3) == 0){
+			cur = new_token(TK_CONTROL, cur, p);
+			cur->len = 3;
+			p += 3;
 		}else if (isalpha(*p)){
 			int len = 0;
 			do{

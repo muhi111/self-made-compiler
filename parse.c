@@ -102,9 +102,14 @@ Node *stmt(void){
 	}
 	return node;
 }
-// expr = assign
+// expr = assign | int ident
 Node *expr(void){
-	Node *node = assign();
+	Node *node;
+	if(consume("int")){
+		node = new_node_identdef();
+	}else{
+		node = assign();
+	}
 	return node;
 }
 // assign = equality ("=" assign)?
@@ -243,16 +248,24 @@ Node *new_node_ident(void){
 	if (lvar){
 		node->offset = lvar->offset;
 	}else{
-		lvar = calloc(1, sizeof(LVar));
-		lvar->prev = locals;
-		locals->next = lvar;
-		lvar->next = NULL;
-		lvar->name = token->str;
-		lvar->len = token->len;
-		lvar->offset = locals->offset + 8;
-		node->offset = lvar->offset;
-		locals = lvar;
+		error_at(token->str, "宣言されていない変数が使われました");
 	}
+	token = token->next;
+	return node;
+}
+
+Node *new_node_identdef(void){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_LVARDEF;
+	LVar *lvar = calloc(1, sizeof(LVar));
+	lvar->prev = locals;
+	locals->next = lvar;
+	lvar->next = NULL;
+	lvar->name = token->str;
+	lvar->len = token->len;
+	lvar->offset = locals->offset + 8;
+	node->offset = lvar->offset;
+	locals = lvar;
 	token = token->next;
 	return node;
 }

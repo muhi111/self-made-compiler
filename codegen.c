@@ -40,11 +40,7 @@ void gen(Node *node){
 		while(temp && temp->arg_flag == 1){
 			printf("  mov rax, rbp\n");
 			printf("  sub rax, %d\n", temp->offset);
-			// printf("  push rax\n");
-			// printf("  pop rdi\n");
-			// printf("  pop rax\n");
 			printf("  mov [rax], %s\n", argreg[i]);
-			// printf("  push rdi\n"); // ??????
 			temp = temp->next;
 			i++;
 		}
@@ -133,6 +129,8 @@ void gen(Node *node){
 		printf("  pop rax\n");
 		printf("  mov rax, [rax]\n");
 		printf("  push rax\n");
+		return;
+	case ND_LVARDEF:
 		return;
 	case ND_ASSIGN:
 		gen_lval(node->lhs);
