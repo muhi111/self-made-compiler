@@ -11,8 +11,9 @@ Node *program(void){
 	cur->func_next = NULL;
 	return head.func_next;
 }
-// // indent"("")" "{" stmt* "}"
+// indent"(" ("int" args,)? ")" "{" stmt* "}"
 Node *function(){
+	expect("int");
 	Node *node = new_node_func();
 	node->lvar = calloc(1, sizeof(LVar));
 	locals = node->lvar;
@@ -20,6 +21,7 @@ Node *function(){
 	if(consume(")")){
 	}else{
 		while(1){
+			expect("int");
 			LVar *lvar = calloc(1, sizeof(LVar));
 			lvar->prev = locals;
 			locals->next = lvar;
