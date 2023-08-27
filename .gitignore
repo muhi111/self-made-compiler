@@ -1,6 +1,6 @@
 smc
 tmp*
 temp*
-*.o
 a.out
 .vscode/
+obj/

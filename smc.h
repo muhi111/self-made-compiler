@@ -5,9 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Type Type;
 typedef struct Token Token;
 typedef struct Node Node;
 typedef struct LVar LVar;
+
+// 変数の型
+struct Type {
+  enum { INT, PTR } ty;
+  struct Type *ptr_to;  // ポインタ型のみ使う
+};
 
 // トークン
 typedef enum{
@@ -66,6 +73,7 @@ struct Node{
 	Node *func_next;   // 次の関数の宣言を表わす ND_FUNCDEFで使う
 	LVar *lvar;	       // 関数の引数も含むローカル変数を格納する ND_FUNDEFで使う
 	char *funcname;    // 関数の名前
+	Type *type;		   // typeを格納する
 	int val;		   // kindがND_NUMの場合のみ使う
 	int offset;	       // kindがND_LVARの場合のみ使う
 };
@@ -74,7 +82,7 @@ struct Node{
 struct LVar{
 	LVar *next;      // 次の変数かNULL
 	LVar *prev;      // 前の変数かNULL
-	LVar *next_func; // 次の関数の変数
+	Type *type;
 	char *name;      // 変数の名前
 	int len;	     // 名前の長さ
 	int offset;      // RBPからのオフセット
